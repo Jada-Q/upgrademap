@@ -30,8 +30,16 @@ export default async function HomePage() {
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6">
-        <div className="bg-blue-50 rounded-xl px-4 py-3 text-sm text-blue-700 mb-6">
-          数据来源：国土交通省 reinfolib（成交价）+ 総務省 e-Stat（人口統計）
+        <div className="flex items-center justify-between mb-6">
+          <div className="bg-blue-50 rounded-xl px-4 py-3 text-sm text-blue-700 flex-1">
+            数据来源：国土交通省 reinfolib（成交价）+ 総務省 e-Stat（人口統計）
+          </div>
+          <a
+            href="/compare"
+            className="ml-3 shrink-0 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:border-blue-300 hover:text-blue-600 transition-all"
+          >
+            横向对比 →
+          </a>
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
