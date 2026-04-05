@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { getAllWards, getWardSignal, getWardPopulation, calcPopGrowth } from '@/lib/queries'
 import { calcPriceScore, calcPopScore, calcCompositeScore, SIGNAL_META, getConfidence } from '@/lib/score'
@@ -38,7 +39,7 @@ export default async function WardPage({ params }: Props) {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-2xl mx-auto px-4 py-4">
-          <a href="/" className="text-sm text-blue-600 hover:underline">← 返回总览</a>
+          <Link href="/" className="text-sm text-blue-600 hover:underline">← 返回总览</Link>
           <div className="flex items-baseline gap-3 mt-2">
             <h1 className="text-2xl font-bold text-gray-900">{ward.name_zh}</h1>
             <span className="text-gray-400 text-sm">{ward.name_ja}</span>
@@ -64,16 +65,15 @@ export default async function WardPage({ params }: Props) {
           </div>
 
           <div className="space-y-3">
-            <ScoreBar label="房价动量" score={priceScore} color="blue" />
+            <ScoreBar label="房价动量" score={priceScore} color={hasPrice ? 'blue' : 'gray'} disabled={!hasPrice} />
             <ScoreBar label="人口活力" score={popScore} color="green" />
-            <ScoreBar label="商业活力" score={50} color="gray" disabled />
           </div>
-          <p className="text-xs text-gray-400 mt-3">商业活力信号即将上线（第三数据源接入中）</p>
           {!hasPrice && (
-            <p className="text-xs text-amber-600 mt-1">
-              该区房价数据未接入，综合评分仅基于人口数据，参考价值有限
+            <p className="text-xs text-amber-600 mt-3">
+              该区成交价数据未接入，评分仅基于人口趋势
             </p>
           )}
+          <p className="text-xs text-gray-400 mt-2">更多评分维度开发中</p>
         </div>
 
         {/* 房价指标 */}
@@ -89,9 +89,13 @@ export default async function WardPage({ params }: Props) {
               </div>
               <div className="text-center">
                 <div className={`text-xl font-bold ${(signal.price_acceleration ?? 0) >= 0 ? 'text-blue-600' : 'text-orange-500'}`}>
-                  {signal.price_acceleration != null ? `${signal.price_acceleration >= 0 ? '+' : ''}${signal.price_acceleration.toFixed(1)}` : '—'}
+                  {signal.price_acceleration != null
+                    ? (signal.price_acceleration > 2 ? '加速中' : signal.price_acceleration < -2 ? '减速中' : '平稳')
+                    : '—'}
                 </div>
-                <div className="text-xs text-gray-400 mt-1">加速度</div>
+                <div className="text-xs text-gray-400 mt-1">
+                  涨幅趋势{signal.price_acceleration != null ? ` (${signal.price_acceleration >= 0 ? '+' : ''}${signal.price_acceleration.toFixed(1)})` : ''}
+                </div>
               </div>
               <div className="text-center">
                 <div className={`text-xl font-bold ${(signal.price_vs_tokyo_avg ?? 0) <= 0 ? 'text-green-600' : 'text-orange-500'}`}>
@@ -107,9 +111,9 @@ export default async function WardPage({ params }: Props) {
         )}
 
         {!hasPrice && (
-          <div className="bg-white rounded-xl p-5 border border-gray-100 text-center text-sm text-gray-400">
-            该区域房价成交数据即将上线
-            <p className="text-xs mt-1">目前覆盖：港区 / 渋谷区 / 千代田区 / 中央区 / 新宿区 / 目黒区</p>
+          <div className="bg-amber-50 rounded-xl p-5 border border-amber-100 text-center">
+            <p className="text-sm text-amber-700">该区成交价数据尚未接入</p>
+            <p className="text-xs text-amber-600 mt-1">点击右下角「想看哪个区？」告诉我们，我们会优先接入</p>
           </div>
         )}
 
@@ -146,14 +150,14 @@ export default async function WardPage({ params }: Props) {
         {/* YieldMap 链接 */}
         {hasPrice && (
           <div className="bg-blue-50 rounded-xl p-4 text-center">
-            <p className="text-sm text-blue-700 mb-2">查看该区各站点的详细成交价走势</p>
+            <p className="text-sm text-blue-700 mb-2">想看具体车站周边的成交价走势？</p>
             <a
               href="https://yieldmap-theta.vercel.app"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-1 bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium px-4 py-2 rounded-lg transition-colors"
             >
-              打开 YieldMap 查看站点详情 <span className="text-blue-200">↗</span>
+              打开 YieldMap（姊妹工具）查看站点级数据 <span className="text-blue-200">↗</span>
             </a>
           </div>
         )}

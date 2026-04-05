@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import Link from 'next/link'
 import { getAllWards, getLatestSignals } from '@/lib/queries'
 import { CompareTable } from './CompareTable'
 
@@ -18,9 +19,9 @@ export default async function ComparePage() {
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b border-gray-100">
         <div className="max-w-4xl mx-auto px-4 py-4">
-          <a href="/" className="text-sm text-blue-600 hover:underline">← 返回总览</a>
+          <Link href="/" className="text-sm text-blue-600 hover:underline">← 返回总览</Link>
           <h1 className="text-lg font-bold text-gray-900 mt-2">23区横向对比</h1>
-          <p className="text-sm text-gray-400">点击表头排序 · 数据来源：reinfolib + e-Stat</p>
+          <p className="text-sm text-gray-400">数据来源：reinfolib + e-Stat</p>
         </div>
       </div>
 

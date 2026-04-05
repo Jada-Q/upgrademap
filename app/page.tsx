@@ -1,5 +1,6 @@
 export const dynamic = 'force-dynamic'
 
+import Link from 'next/link'
 import { getAllWards, getLatestSignals } from '@/lib/queries'
 import { SIGNAL_META, getConfidence } from '@/lib/score'
 import { ACTIVE_WARD_CODES } from '@/lib/constants'
@@ -24,22 +25,28 @@ export default async function HomePage() {
         <div className="max-w-3xl mx-auto px-4 py-5">
           <h1 className="text-xl font-bold text-gray-900">UpgradeMap</h1>
           <p className="text-sm text-gray-500 mt-0.5">
-            东京23区街区升级预测 — 房价动量 x 人口活力 交叉分析
+            发现东京正在涨价的区域 — 基于真实成交价和人口趋势
           </p>
         </div>
       </div>
 
       <div className="max-w-3xl mx-auto px-4 py-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="bg-blue-50 rounded-xl px-4 py-3 text-sm text-blue-700 flex-1">
-            数据来源：国土交通省 reinfolib（成交价）+ 総務省 e-Stat（人口統計）
-          </div>
-          <a
-            href="/compare"
-            className="ml-3 shrink-0 bg-white border border-gray-200 rounded-xl px-4 py-3 text-sm font-medium text-gray-700 hover:border-blue-300 hover:text-blue-600 transition-all"
+        <div className="flex gap-2 mb-4">
+          <Link
+            href="/"
+            className="flex-1 text-center bg-blue-600 text-white text-sm font-medium px-4 py-2.5 rounded-lg"
           >
-            横向对比 →
-          </a>
+            卡片视图
+          </Link>
+          <Link
+            href="/compare"
+            className="flex-1 text-center bg-white border border-gray-200 text-sm font-medium text-gray-700 px-4 py-2.5 rounded-lg hover:border-blue-300 hover:text-blue-600 transition-all"
+          >
+            排名对比
+          </Link>
+        </div>
+        <div className="bg-blue-50 rounded-xl px-4 py-2.5 text-xs text-blue-600 mb-4">
+          数据来源：国土交通省 reinfolib（成交价）+ 総務省 e-Stat（人口統計）
         </div>
 
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -50,14 +57,10 @@ export default async function HomePage() {
             const confidence = getConfidence(hasData, sig?.total_pop_yoy_pct != null)
 
             return (
-              <a
+              <Link
                 key={ward.code}
-                href={hasData ? `/ward/${ward.code}` : '#'}
-                className={`bg-white rounded-xl border px-4 py-4 transition-all ${
-                  hasData
-                    ? 'border-gray-100 hover:border-blue-300 hover:shadow-sm'
-                    : 'border-gray-50 opacity-50 cursor-default'
-                }`}
+                href={`/ward/${ward.code}`}
+                className="bg-white rounded-xl border border-gray-100 px-4 py-4 transition-all hover:border-blue-300 hover:shadow-sm"
               >
                 <div className="flex items-start justify-between">
                   <div>
@@ -101,13 +104,11 @@ export default async function HomePage() {
                       <span className={`text-[10px] px-1.5 py-0.5 rounded ${confidence.bg} ${confidence.color}`}>
                         {confidence.label}
                       </span>
-                      {!hasData && (
-                        <span className="text-[10px] text-gray-400">评分参考价值有限</span>
-                      )}
+                      <span className="text-[10px] text-gray-400">{confidence.desc}</span>
                     </div>
                   </div>
                 )}
-              </a>
+              </Link>
             )
           })}
         </div>

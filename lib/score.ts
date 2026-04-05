@@ -68,10 +68,10 @@ export function getConfidence(hasPriceData: boolean, hasPopData: boolean): {
   desc: string
 } {
   if (hasPriceData && hasPopData) {
-    return { level: 'high', label: '双信号', color: 'text-emerald-600', bg: 'bg-emerald-50', desc: '基于房价成交 + 人口统计' }
+    return { level: 'high', label: '2项数据', color: 'text-emerald-600', bg: 'bg-emerald-50', desc: '基于真实成交价 + 人口统计' }
   }
   if (hasPopData) {
-    return { level: 'medium', label: '仅人口', color: 'text-amber-600', bg: 'bg-amber-50', desc: '仅基于人口统计，房价数据待接入' }
+    return { level: 'medium', label: '1项数据', color: 'text-amber-600', bg: 'bg-amber-50', desc: '仅基于人口统计，成交价数据待接入' }
   }
   return { level: 'low', label: '数据不足', color: 'text-gray-400', bg: 'bg-gray-50', desc: '暂无可用数据' }
 }

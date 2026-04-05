@@ -4,19 +4,30 @@ import { useState } from 'react'
 
 export function FeedbackWidget() {
   const [open, setOpen] = useState(false)
-  const [sent, setSent] = useState(false)
+  const [status, setStatus] = useState<'idle' | 'sending' | 'sent' | 'error'>('idle')
   const [ward, setWard] = useState('')
   const [comment, setComment] = useState('')
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    // For now, log to console + store in localStorage as simple collection
-    const feedback = { ward, comment, timestamp: new Date().toISOString() }
-    const existing = JSON.parse(localStorage.getItem('um_feedback') || '[]')
-    existing.push(feedback)
-    localStorage.setItem('um_feedback', JSON.stringify(existing))
-    setSent(true)
-    setTimeout(() => { setOpen(false); setSent(false); setWard(''); setComment('') }, 2000)
+    setStatus('sending')
+
+    try {
+      const res = await fetch('/api/feedback', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ ward, comment }),
+      })
+
+      if (res.ok) {
+        setStatus('sent')
+        setTimeout(() => { setOpen(false); setStatus('idle'); setWard(''); setComment('') }, 2000)
+      } else {
+        setStatus('error')
+      }
+    } catch {
+      setStatus('error')
+    }
   }
 
   if (!open) {
@@ -37,9 +48,19 @@ export function FeedbackWidget() {
         <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600 text-lg leading-none">&times;</button>
       </div>
 
-      {sent ? (
+      {status === 'sent' ? (
         <div className="text-center py-6 text-sm text-green-600 font-medium">
-          感谢反馈！我们会优先接入你关注的区域
+          已收到，感谢！我们会优先接入你关注的区域
+        </div>
+      ) : status === 'error' ? (
+        <div className="text-center py-6 space-y-2">
+          <p className="text-sm text-red-500">发送失败，请稍后重试</p>
+          <button
+            onClick={() => setStatus('idle')}
+            className="text-xs text-blue-600 hover:underline"
+          >
+            重新填写
+          </button>
         </div>
       ) : (
         <form onSubmit={handleSubmit} className="space-y-3">
@@ -66,9 +87,10 @@ export function FeedbackWidget() {
           </div>
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white text-sm font-medium py-2 rounded-lg transition-colors"
+            disabled={status === 'sending'}
+            className="w-full bg-blue-600 hover:bg-blue-700 disabled:bg-blue-400 text-white text-sm font-medium py-2 rounded-lg transition-colors"
           >
-            提交
+            {status === 'sending' ? '发送中...' : '提交'}
           </button>
         </form>
       )}
