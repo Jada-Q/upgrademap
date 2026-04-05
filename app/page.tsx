@@ -1,7 +1,7 @@
 export const dynamic = 'force-dynamic'
 
 import { getAllWards, getLatestSignals } from '@/lib/queries'
-import { SIGNAL_META } from '@/lib/score'
+import { SIGNAL_META, getConfidence } from '@/lib/score'
 import { ACTIVE_WARD_CODES } from '@/lib/constants'
 
 export default async function HomePage() {
@@ -47,6 +47,7 @@ export default async function HomePage() {
             const sig = signalMap[ward.code]
             const hasData = ACTIVE_WARD_CODES.includes(ward.code)
             const meta = sig?.upgrade_signal ? SIGNAL_META[sig.upgrade_signal] : SIGNAL_META.unknown
+            const confidence = getConfidence(hasData, sig?.total_pop_yoy_pct != null)
 
             return (
               <a
@@ -72,32 +73,39 @@ export default async function HomePage() {
                 </div>
 
                 {sig && (
-                  <div className="mt-3 flex items-center justify-between">
-                    <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${meta.bg} ${meta.color}`}>
-                      {meta.label}
-                    </span>
-                    <div className="flex gap-3 text-xs text-gray-400">
-                      {sig.price_yoy_pct != null && (
-                        <span>
-                          房价{' '}
-                          <span className={sig.price_yoy_pct >= 0 ? 'text-green-600' : 'text-red-500'}>
-                            {sig.price_yoy_pct >= 0 ? '+' : ''}{sig.price_yoy_pct.toFixed(1)}%
+                  <div className="mt-3 space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className={`text-xs font-medium px-2 py-0.5 rounded-full ${meta.bg} ${meta.color}`}>
+                        {meta.label}
+                      </span>
+                      <div className="flex gap-3 text-xs text-gray-400">
+                        {sig.price_yoy_pct != null && (
+                          <span>
+                            房价{' '}
+                            <span className={sig.price_yoy_pct >= 0 ? 'text-green-600' : 'text-red-500'}>
+                              {sig.price_yoy_pct >= 0 ? '+' : ''}{sig.price_yoy_pct.toFixed(1)}%
+                            </span>
                           </span>
-                        </span>
-                      )}
-                      {sig.total_pop_yoy_pct != null && (
-                        <span>
-                          人口{' '}
-                          <span className={sig.total_pop_yoy_pct >= 0 ? 'text-green-600' : 'text-red-500'}>
-                            {sig.total_pop_yoy_pct >= 0 ? '+' : ''}{sig.total_pop_yoy_pct.toFixed(1)}%
+                        )}
+                        {sig.total_pop_yoy_pct != null && (
+                          <span>
+                            人口{' '}
+                            <span className={sig.total_pop_yoy_pct >= 0 ? 'text-green-600' : 'text-red-500'}>
+                              {sig.total_pop_yoy_pct >= 0 ? '+' : ''}{sig.total_pop_yoy_pct.toFixed(1)}%
+                            </span>
                           </span>
-                        </span>
+                        )}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded ${confidence.bg} ${confidence.color}`}>
+                        {confidence.label}
+                      </span>
+                      {!hasData && (
+                        <span className="text-[10px] text-gray-400">评分参考价值有限</span>
                       )}
                     </div>
                   </div>
-                )}
-                {!hasData && (
-                  <div className="mt-2 text-xs text-gray-400">房价数据即将上线</div>
                 )}
               </a>
             )

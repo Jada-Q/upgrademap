@@ -2,7 +2,7 @@ export const dynamic = 'force-dynamic'
 
 import { notFound } from 'next/navigation'
 import { getAllWards, getWardSignal, getWardPopulation, calcPopGrowth } from '@/lib/queries'
-import { calcPriceScore, calcPopScore, calcCompositeScore, SIGNAL_META } from '@/lib/score'
+import { calcPriceScore, calcPopScore, calcCompositeScore, SIGNAL_META, getConfidence } from '@/lib/score'
 import { ACTIVE_WARD_CODES } from '@/lib/constants'
 import { ScoreBar } from './ScoreBar'
 import { PopChart } from './PopChart'
@@ -29,6 +29,7 @@ export default async function WardPage({ params }: Props) {
   const popScore = calcPopScore(totalPct, workingPct)
   const composite = calcCompositeScore(priceScore, popScore)
   const meta = signal?.upgrade_signal ? SIGNAL_META[signal.upgrade_signal] : SIGNAL_META.unknown
+  const confidence = getConfidence(hasPrice, totalPct != null)
 
   const latestPop = popData.at(-1)
   const prevPop = popData.at(-2)
@@ -46,6 +47,10 @@ export default async function WardPage({ params }: Props) {
             </span>
           </div>
           <p className="text-sm text-gray-400 mt-1">{meta.desc}</p>
+          <div className={`inline-flex items-center gap-1.5 mt-2 text-xs px-2 py-1 rounded ${confidence.bg} ${confidence.color}`}>
+            <span className="font-medium">{confidence.label}</span>
+            <span className="opacity-70">— {confidence.desc}</span>
+          </div>
         </div>
       </div>
 
@@ -64,6 +69,11 @@ export default async function WardPage({ params }: Props) {
             <ScoreBar label="商业活力" score={50} color="gray" disabled />
           </div>
           <p className="text-xs text-gray-400 mt-3">商业活力信号即将上线（第三数据源接入中）</p>
+          {!hasPrice && (
+            <p className="text-xs text-amber-600 mt-1">
+              该区房价数据未接入，综合评分仅基于人口数据，参考价值有限
+            </p>
+          )}
         </div>
 
         {/* 房价指标 */}

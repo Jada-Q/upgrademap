@@ -56,3 +56,22 @@ export const SIGNAL_META: Record<string, { label: string; color: string; bg: str
   mature:  { label: '成熟/风险', color: 'text-orange-500', bg: 'bg-orange-50', desc: '价格高但人口增长放缓 — 注意回调风险' },
   unknown: { label: '信号不足', color: 'text-gray-400',   bg: 'bg-gray-50',   desc: '数据不足以做出判断' },
 }
+
+// Data confidence level based on available signals
+export type ConfidenceLevel = 'high' | 'medium' | 'low'
+
+export function getConfidence(hasPriceData: boolean, hasPopData: boolean): {
+  level: ConfidenceLevel
+  label: string
+  color: string
+  bg: string
+  desc: string
+} {
+  if (hasPriceData && hasPopData) {
+    return { level: 'high', label: '双信号', color: 'text-emerald-600', bg: 'bg-emerald-50', desc: '基于房价成交 + 人口统计' }
+  }
+  if (hasPopData) {
+    return { level: 'medium', label: '仅人口', color: 'text-amber-600', bg: 'bg-amber-50', desc: '仅基于人口统计，房价数据待接入' }
+  }
+  return { level: 'low', label: '数据不足', color: 'text-gray-400', bg: 'bg-gray-50', desc: '暂无可用数据' }
+}

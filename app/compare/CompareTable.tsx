@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { SIGNAL_META } from '@/lib/score'
+import { SIGNAL_META, getConfidence } from '@/lib/score'
 import { ACTIVE_WARD_CODES } from '@/lib/constants'
 
 type Ward = { code: string; name_ja: string; name_zh: string }
@@ -51,13 +51,15 @@ export function CompareTable({ rows }: { rows: Row[] }) {
           <th className="text-right py-3 pr-3"><SortBtn k="score" label="综合分" /></th>
           <th className="text-right py-3 pr-3"><SortBtn k="priceYoy" label="房价YoY" /></th>
           <th className="text-right py-3 pr-3"><SortBtn k="vsAvg" label="vs均值" /></th>
-          <th className="text-right py-3"><SortBtn k="popYoy" label="人口增长" /></th>
+          <th className="text-right py-3 pr-3"><SortBtn k="popYoy" label="人口增长" /></th>
+          <th className="text-center py-3 font-medium text-gray-400 text-xs">数据</th>
         </tr>
       </thead>
       <tbody>
         {sorted.map(({ ward, signal }) => {
           const meta = signal?.upgrade_signal ? SIGNAL_META[signal.upgrade_signal] : SIGNAL_META.unknown
           const hasPrice = ACTIVE_WARD_CODES.includes(ward.code)
+          const confidence = getConfidence(hasPrice, signal?.total_pop_yoy_pct != null)
 
           return (
             <tr key={ward.code} className="border-b border-gray-100 hover:bg-white transition-colors">
@@ -91,12 +93,17 @@ export function CompareTable({ rows }: { rows: Row[] }) {
                   </span>
                 ) : <span className="text-gray-300">—</span>}
               </td>
-              <td className="py-3 text-right">
+              <td className="py-3 pr-3 text-right">
                 {signal?.total_pop_yoy_pct != null ? (
                   <span className={`font-medium ${signal.total_pop_yoy_pct >= 0 ? 'text-green-600' : 'text-red-500'}`}>
                     {signal.total_pop_yoy_pct >= 0 ? '+' : ''}{signal.total_pop_yoy_pct.toFixed(1)}%
                   </span>
                 ) : <span className="text-gray-300">—</span>}
+              </td>
+              <td className="py-3 text-center">
+                <span className={`text-[10px] px-1.5 py-0.5 rounded ${confidence.bg} ${confidence.color}`}>
+                  {confidence.label}
+                </span>
               </td>
             </tr>
           )
