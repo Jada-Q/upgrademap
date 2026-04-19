@@ -10,10 +10,11 @@ export function calcPriceScore(yoyPct: number | null, acceleration: number | nul
 
   const momentum = clamp(yoyPct * 3, -30, 30) + 50
   const accel = acceleration !== null ? clamp(acceleration * 5, -25, 25) + 50 : 50
-  // 低于东京均值 = 更多上涨空间 = 高分
-  const value = vsTokyoAvg !== null ? clamp(-vsTokyoAvg * 1.5, -25, 25) + 50 : 50
+  // 价格水平 = 已升级的结果。高于东京均值 → 已是升级区；远低于均值 → 通常是停滞区。
+  // 不把 "低价" 等同于 "上涨空间"，否则外围廉价区因百分比增长易被误排高。
+  const tier = vsTokyoAvg !== null ? clamp(vsTokyoAvg * 0.5, -15, 15) + 50 : 50
 
-  return Math.round((0.4 * momentum + 0.3 * accel + 0.3 * value) * 100) / 100
+  return Math.round((0.4 * momentum + 0.3 * accel + 0.3 * tier) * 100) / 100
 }
 
 export function calcPopScore(totalPopPct: number | null, workingPopPct: number | null): number {
