@@ -44,7 +44,9 @@ export function classifySignal(
   if (priceScore > 55 && popScore > 50) {
     return 'active'
   }
-  if (priceScore > 55 && popScore < 45) {
+  // mature = 价格真的高（vsTokyoAvg > 0）+ 人口指标转弱。
+  // 必要条件：价格绝对值高于东京均值，否则"低价+老龄化"会被误贴 mature 标。
+  if (priceScore > 55 && popScore < 45 && (vsTokyoAvg ?? -99) > 0) {
     return 'mature'
   }
   return 'unknown'

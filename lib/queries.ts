@@ -12,6 +12,12 @@ export type Ward = {
   name_zh: string
 }
 
+/**
+ * NOTE: Historical naming debt.
+ * DB 列名 `pop_25_44` / `pop_25_44_yoy_pct` 实际存的是 **15-64 岁人口**（census 劳动人口口径）。
+ * 这会把老龄化区的 15-64 自然下降误判成 working-pop 流失。用时务必记住。
+ * 若要改名需跑 Supabase migration + 所有 upsert 路径同步，暂不值得。
+ */
 export type Signal = {
   ward_code: string
   period: string
@@ -30,7 +36,7 @@ export type PopulationRow = {
   ward_code: string
   year: number
   total_population: number | null
-  pop_25_44: number | null // actually 15-64 from census
+  pop_25_44: number | null
   households: number | null
 }
 
