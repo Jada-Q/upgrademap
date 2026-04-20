@@ -21,7 +21,7 @@ const sb = createClient(
   process.env.SUPABASE_SERVICE_ROLE_KEY!,
 )
 
-interface Record {
+interface TxRecord {
   Type: string
   Municipality: string
   DistrictName: string
@@ -56,7 +56,7 @@ function parseBuildYear(v: string): number | null {
   return null
 }
 
-async function fetchWardQuarter(code: string, year: number, q: number): Promise<Record[]> {
+async function fetchWardQuarter(code: string, year: number, q: number): Promise<TxRecord[]> {
   const url = new URL('https://www.reinfolib.mlit.go.jp/ex-api/external/XIT001')
   url.searchParams.set('year', String(year))
   url.searchParams.set('quarter', String(q))
@@ -67,7 +67,7 @@ async function fetchWardQuarter(code: string, year: number, q: number): Promise<
     console.warn(`    ⚠️ HTTP ${res.status} ${code} ${year}Q${q}`)
     return []
   }
-  const json = await res.json() as { data?: Record[] }
+  const json = await res.json() as { data?: TxRecord[] }
   return json.data ?? []
 }
 
