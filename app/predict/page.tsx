@@ -128,11 +128,46 @@ export default async function PredictPage() {
         <div><span className="text-green-300">H1</span> 三角校验: ●●● ≥3 独立信号源 = 高置信判断 [Heuer 1999]</div>
         <div><span className="text-green-300">H2</span> 沉默信号: 长期不出 = 战略 No，是护城河前提 [Porter 1996]</div>
         <div><span className="text-green-300">H3</span> Incentive override: cheap talk vs costly signal 冲突相信后者 [Spence 1973]</div>
-        <div className="pt-1 text-gray-600">
-          基于 Akerlof 1970 不对称信息经济学。Mom = 历史动量 (momentum+accel+tier) · Pred = 反推综合 · Δ = Pred-Mom (divergence = alpha 信号)
+
+        {/* Scoring formula transparency */}
+        <div className="mt-3 pt-2 border-t border-green-900/50">
+          <div className="text-gray-400 mb-1">SCORING (推论依据 / how Pred is computed):</div>
+          <div className="font-mono text-gray-500 leading-snug">
+            <div>strength<sub>i</sub> = clamp(raw<sub>i</sub> × scale<sub>i</sub> + 50, 0, 100)</div>
+            <div className="ml-3">房价动量    raw=price_yoy   scale=5   weight=0.35  ← Spence costly (成交价不可伪造)</div>
+            <div className="ml-3">人口净流入  raw=pop_yoy     scale=15  weight=0.30  ← Spence "voting with feet"</div>
+            <div className="ml-3">商业活力    raw=permits_yoy scale=8   weight=0.20  ← 開店成本不可伪造</div>
+            <div className="ml-3">价格加速度  raw=acceleration scale=5  weight=0.15  ← 趋势二阶导</div>
+            <div className="mt-1">Pred = Σ (strength<sub>i</sub> × weight<sub>i</sub>)，缺信号 → neutral 50 × weight (惩罚不完整)</div>
+            <div>Δ = Pred − Mom (divergence) — 偏离历史动量越大 = 反推方法论 alpha 越强</div>
+          </div>
+        </div>
+
+        {/* Data sources */}
+        <div className="mt-3 pt-2 border-t border-green-900/50">
+          <div className="text-gray-400 mb-1">DATA SOURCES (信号源):</div>
+          <div className="ml-3 text-gray-500">
+            <div>price_yoy        ← 国土交通省 reinfolib (実成約価)</div>
+            <div>pop_yoy          ← 総務省 e-Stat (国勢調査)</div>
+            <div>permits_yoy      ← 東京都食品営業許可 <span className="text-yellow-600">⚠️ 集約 pending (Bug #1)</span></div>
+            <div>price_acceleration ← reinfolib momentum 二階差分</div>
+          </div>
+        </div>
+
+        {/* H3 trigger logic */}
+        <div className="mt-3 pt-2 border-t border-green-900/50">
+          <div className="text-gray-400 mb-1">H3 OVERRIDE 触发条件:</div>
+          <div className="ml-3 text-gray-500">
+            <div>price_yoy {'>'} 5% AND permits_yoy {'<'} −5% → 投机 vs 实需冲突</div>
+            <div>pop_yoy {'<'} −1% AND price_yoy {'>'} 3% → 人口流出 vs 房价上涨 = 投机性涨价</div>
+          </div>
+        </div>
+
+        <div className="pt-2 text-gray-600">
+          基于 Akerlof 1970 不对称信息经济学。Mom = 历史动量 (lib/score.ts: momentum 0.4 + accel 0.3 + tier 0.3) · Pred = 反推综合 (lib/predict-score.ts: 上述公式)
         </div>
         <div className="text-gray-700 italic pt-1">
-          数据仅供参考，不构成投资建议 · weights 为 initial guess，待 backtest 校准
+          数据仅供参考，不构成投资建议 · weights 为 initial guess，待 backtest 校准 · 算法源码 lib/predict-score.ts
         </div>
       </div>
     </div>
