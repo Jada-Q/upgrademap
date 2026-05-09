@@ -44,6 +44,12 @@ export default async function HomePage() {
           >
             排名对比
           </Link>
+          <Link
+            href="/predict"
+            className="flex-1 text-center bg-white border border-gray-200 text-sm font-medium text-gray-700 px-4 py-2.5 rounded-lg hover:border-blue-300 hover:text-blue-600 transition-all"
+          >
+            反推预测
+          </Link>
         </div>
         <div className="bg-blue-50 rounded-xl px-4 py-2.5 text-xs text-blue-600 mb-4">
           数据来源：国土交通省 reinfolib（成交价）+ 総務省 e-Stat（人口統計）
