@@ -49,37 +49,35 @@ function clamp(v: number, min: number, max: number): number {
 export function calcPredictScore(input: PredictInput): PredictResult {
   const costly: SignalSource[] = []
   const silent: SignalSource[] = []
-  let totalSignal = 0
-  let totalWeight = 0
+  let priceStrength: number | null = null
+  let popStrength: number | null = null
+  let permitsStrength: number | null = null
+  let accelStrength: number | null = null
   let signalCount = 0
 
   // Signal 1: 房价 YoY (Spence costly — 真实成交价不可伪造)
   if (input.price_yoy_pct !== null) {
-    const strength = clamp(input.price_yoy_pct * 5 + 50, 0, 100)
+    priceStrength = clamp(input.price_yoy_pct * 5 + 50, 0, 100)
     costly.push({
       name: '房价动量',
       type: 'costly',
-      strength,
+      strength: priceStrength,
       raw: input.price_yoy_pct,
       note: 'reinfolib 真实成交 (Spence costly)',
     })
-    totalSignal += strength * 0.35
-    totalWeight += 0.35
     signalCount++
   }
 
   // Signal 2: 人口净流入 (Spence "voting with feet" — 搬家成本极高)
   if (input.total_pop_yoy_pct !== null) {
-    const strength = clamp(input.total_pop_yoy_pct * 15 + 50, 0, 100)
+    popStrength = clamp(input.total_pop_yoy_pct * 15 + 50, 0, 100)
     costly.push({
       name: '人口净流入',
       type: 'costly',
-      strength,
+      strength: popStrength,
       raw: input.total_pop_yoy_pct,
       note: 'e-Stat 普查 (voting with feet)',
     })
-    totalSignal += strength * 0.30
-    totalWeight += 0.30
     signalCount++
   } else {
     silent.push({
@@ -93,16 +91,14 @@ export function calcPredictScore(input: PredictInput): PredictResult {
 
   // Signal 3: 商业活力 (餐饮新店许可 — 开店投入实金，costly)
   if (input.permits_yoy_pct !== null) {
-    const strength = clamp(input.permits_yoy_pct * 8 + 50, 0, 100)
+    permitsStrength = clamp(input.permits_yoy_pct * 8 + 50, 0, 100)
     costly.push({
       name: '商业活力',
       type: 'costly',
-      strength,
+      strength: permitsStrength,
       raw: input.permits_yoy_pct,
       note: '東京都食品営業許可 (开店成本不可伪造)',
     })
-    totalSignal += strength * 0.20
-    totalWeight += 0.20
     signalCount++
   } else if (input.permits_count !== null && input.permits_count < 5) {
     silent.push({
@@ -116,15 +112,18 @@ export function calcPredictScore(input: PredictInput): PredictResult {
 
   // Acceleration (附加 weight，不算独立 signal)
   if (input.price_acceleration !== null) {
-    const accel = clamp(input.price_acceleration * 5 + 50, 0, 100)
-    totalSignal += accel * 0.15
-    totalWeight += 0.15
+    accelStrength = clamp(input.price_acceleration * 5 + 50, 0, 100)
   }
 
-  // Score: normalize by actual weight used (handle missing signals gracefully)
-  const score = totalWeight === 0
-    ? 50
-    : Math.round((totalSignal / totalWeight) * 100) / 100
+  // Score: fixed weights, missing signal = neutral 50 (penalize incomplete signals)
+  // 修复 Bug 2: 缺失信号 vs 全信号自然 ~10-20 分 gap，避免 normalize 人为放大缺数据区
+  // Weights: price 0.35 + pop 0.30 + permits 0.20 + accel 0.15 = 1.00
+  const score = Math.round((
+    (priceStrength ?? 50) * 0.35 +
+    (popStrength ?? 50) * 0.30 +
+    (permitsStrength ?? 50) * 0.20 +
+    (accelStrength ?? 50) * 0.15
+  ) * 100) / 100
 
   // H1 三角校验 confidence
   let confidence: 'high' | 'medium' | 'low' = 'low'
